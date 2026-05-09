@@ -30,3 +30,12 @@ model Registration {
   @@unique([studentId])
   @@map("registrations")
 }
+
+model AdminUser {
+  id           String   @id @default(uuid())
+  username     String   @unique
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("admin_users")
+}

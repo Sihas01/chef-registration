@@ -20,7 +20,7 @@ CREATE DATABASE chef_registration;
 
 ```bash
 DATABASE_URL="mysql://root:password@localhost:3306/chef_registration"
-RECEIPT_UPLOAD_DIR="uploads/registration-receipts"
+ADMIN_SESSION_SECRET="replace-with-at-least-32-random-characters"
 ```
 
 4. Apply the SQL migration:
@@ -35,4 +35,17 @@ npm run db:migrate
 npm run dev
 ```
 
-The registration API writes form data to the `registrations` SQL table. Uploaded receipts are saved in `RECEIPT_UPLOAD_DIR`, and the database stores the receipt metadata/path.
+The registration API writes form data to the `registrations` SQL table. Uploaded receipts are saved in `uploads/registration-receipts`, and the database stores the receipt metadata/path.
+
+## Admin portal
+
+Open `/admin` to sign in.
+
+Default admin account seeded by the migration:
+
+```txt
+Username: admin
+Password: Admin@2026!
+```
+
+Change this password before using the app with real student data.

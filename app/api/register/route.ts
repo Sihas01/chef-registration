@@ -22,7 +22,7 @@ function createReferenceId() {
 }
 
 function uploadRoot() {
-  return process.env.RECEIPT_UPLOAD_DIR || path.join("uploads", receiptFolder);
+  return path.join("uploads", receiptFolder);
 }
 
 export async function POST(request: Request) {
