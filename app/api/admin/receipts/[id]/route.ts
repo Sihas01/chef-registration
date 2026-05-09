@@ -1,27 +1,10 @@
-import { readFile } from "fs/promises";
+import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { NextResponse } from "next/server";
-import path from "path";
 import { getAdminSession } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
+import { s3BucketName, s3Client } from "@/lib/s3";
 
 export const runtime = "nodejs";
-
-const receiptFolder = "registration-receipts";
-
-function uploadRoot() {
-  return path.join(process.cwd(), "uploads", receiptFolder);
-}
-
-function safeFilePath(receiptStoragePath: string) {
-  const root = uploadRoot();
-  const resolvedPath = path.join(root, path.basename(receiptStoragePath));
-
-  if (!resolvedPath.startsWith(`${root}${path.sep}`)) {
-    return null;
-  }
-
-  return resolvedPath;
-}
 
 export async function GET(
   _request: Request,
@@ -47,16 +30,20 @@ export async function GET(
     return NextResponse.json({ message: "Receipt not found." }, { status: 404 });
   }
 
-  const filePath = safeFilePath(registration.receiptStoragePath);
-
-  if (!filePath) {
-    return NextResponse.json({ message: "Receipt path is invalid." }, { status: 400 });
-  }
-
   try {
-    const file = await readFile(filePath);
+    const object = await s3Client().send(
+      new GetObjectCommand({
+        Bucket: s3BucketName(),
+        Key: registration.receiptStoragePath,
+      }),
+    );
+    const file = await object.Body?.transformToByteArray();
 
-    return new Response(file, {
+    if (!file) {
+      return NextResponse.json({ message: "Receipt file is missing." }, { status: 404 });
+    }
+
+    return new Response(Buffer.from(file), {
       headers: {
         "Content-Disposition": `attachment; filename="${registration.receiptFileName || "receipt"}"`,
         "Content-Type": registration.receiptContentType || "application/octet-stream",

@@ -1,12 +1,10 @@
 import { randomBytes, randomUUID } from "crypto";
-import { mkdir, writeFile } from "fs/promises";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { NextResponse } from "next/server";
-import path from "path";
 import { prisma } from "@/lib/prisma";
+import { receiptObjectKey, s3BucketName, s3Client } from "@/lib/s3";
 
 export const runtime = "nodejs";
-
-const receiptFolder = "registration-receipts";
 
 function field(formData: FormData, name: string) {
   const value = formData.get(name);
@@ -19,10 +17,6 @@ function cleanFileName(fileName: string) {
 
 function createReferenceId() {
   return `CHEFS-2026-${randomBytes(4).toString("hex").toUpperCase()}`;
-}
-
-function uploadRoot() {
-  return path.join("uploads", receiptFolder);
 }
 
 export async function POST(request: Request) {
@@ -119,12 +113,21 @@ export async function POST(request: Request) {
     receiptFileName = receipt.name || "receipt";
     receiptContentType = receipt.type || "application/octet-stream";
     const fileName = `${referenceId}-${cleanFileName(receiptFileName)}`;
-    const uploadDirectory = uploadRoot();
-    receiptStoragePath = path.join(uploadDirectory, fileName);
+    receiptStoragePath = receiptObjectKey(fileName);
     const buffer = Buffer.from(await receipt.arrayBuffer());
 
-    await mkdir(uploadDirectory, { recursive: true });
-    await writeFile(receiptStoragePath, buffer);
+    await s3Client().send(
+      new PutObjectCommand({
+        Bucket: s3BucketName(),
+        Key: receiptStoragePath,
+        Body: buffer,
+        ContentType: receiptContentType,
+        Metadata: {
+          registrationId: id,
+          originalFileName: receiptFileName,
+        },
+      }),
+    );
   }
 
   await prisma.registration.create({
