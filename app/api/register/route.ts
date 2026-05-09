@@ -1,34 +1,11 @@
-import { randomUUID } from "crypto";
-import { FieldValue } from "firebase-admin/firestore";
+import { randomBytes, randomUUID } from "crypto";
+import { mkdir, writeFile } from "fs/promises";
 import { NextResponse } from "next/server";
-import { firestore, storageBucket } from "@/lib/firebase-admin";
+import path from "path";
+import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
-type Registration = {
-  id: string;
-  submittedAt: string;
-  personalInformation: {
-    firstName: string;
-    surname: string;
-    gender: string;
-    mobileNumber: string;
-  };
-  academicInformation: {
-    studentId: string;
-    studentEmail: string;
-  };
-  feeInformation: {
-    feeStatus: string;
-    helpLoanAmount: string | null;
-    receiptStoragePath: string | null;
-    receiptFileName: string | null;
-    receiptContentType: string | null;
-  };
-  consentAccepted: boolean;
-};
-
-const registrationsCollection = "registrations";
 const receiptFolder = "registration-receipts";
 
 function field(formData: FormData, name: string) {
@@ -38,6 +15,14 @@ function field(formData: FormData, name: string) {
 
 function cleanFileName(fileName: string) {
   return fileName.replace(/[^a-zA-Z0-9._-]/g, "_");
+}
+
+function createReferenceId() {
+  return `CHEFS-2026-${randomBytes(4).toString("hex").toUpperCase()}`;
+}
+
+function uploadRoot() {
+  return process.env.RECEIPT_UPLOAD_DIR || path.join("uploads", receiptFolder);
 }
 
 export async function POST(request: Request) {
@@ -83,6 +68,19 @@ export async function POST(request: Request) {
     );
   }
 
+  const normalizedHelpLoanAmount =
+    feeStatus === "help" ? Number(helpLoanAmount) : null;
+
+  if (
+    feeStatus === "help" &&
+    (normalizedHelpLoanAmount === null || Number.isNaN(normalizedHelpLoanAmount))
+  ) {
+    return NextResponse.json(
+      { message: "Please enter a valid HELP loan amount." },
+      { status: 400 },
+    );
+  }
+
   if (
     feeStatus === "no" &&
     (typeof receipt === "string" || !receipt || receipt.size === 0)
@@ -93,7 +91,26 @@ export async function POST(request: Request) {
     );
   }
 
+  const existingRegistration = await prisma.registration.findUnique({
+    where: {
+      studentId,
+    },
+    select: {
+      referenceId: true,
+    },
+  });
+
+  if (existingRegistration) {
+    return NextResponse.json(
+      {
+        message: `This student ID is already registered. Reference ID: ${existingRegistration.referenceId}`,
+      },
+      { status: 409 },
+    );
+  }
+
   const id = randomUUID();
+  const referenceId = createReferenceId();
   let receiptStoragePath: string | null = null;
   let receiptFileName: string | null = null;
   let receiptContentType: string | null = null;
@@ -101,54 +118,37 @@ export async function POST(request: Request) {
   if (feeStatus === "no" && receipt && typeof receipt !== "string") {
     receiptFileName = receipt.name || "receipt";
     receiptContentType = receipt.type || "application/octet-stream";
-    const fileName = `${id}-${cleanFileName(receiptFileName)}`;
-    receiptStoragePath = `${receiptFolder}/${fileName}`;
+    const fileName = `${referenceId}-${cleanFileName(receiptFileName)}`;
+    const uploadDirectory = uploadRoot();
+    receiptStoragePath = path.join(uploadDirectory, fileName);
     const buffer = Buffer.from(await receipt.arrayBuffer());
 
-    await storageBucket().file(receiptStoragePath).save(buffer, {
-      contentType: receiptContentType,
-      metadata: {
-        metadata: {
-          registrationId: id,
-          originalFileName: receiptFileName,
-        },
-      },
-    });
+    await mkdir(uploadDirectory, { recursive: true });
+    await writeFile(receiptStoragePath, buffer);
   }
 
-  const registration: Registration = {
-    id,
-    submittedAt: new Date().toISOString(),
-    personalInformation: {
+  await prisma.registration.create({
+    data: {
+      id,
+      referenceId,
       firstName,
       surname,
       gender,
       mobileNumber,
-    },
-    academicInformation: {
       studentId,
       studentEmail,
-    },
-    feeInformation: {
       feeStatus,
-      helpLoanAmount: feeStatus === "help" ? helpLoanAmount : null,
+      helpLoanAmount: normalizedHelpLoanAmount,
       receiptStoragePath,
       receiptFileName,
       receiptContentType,
+      consentAccepted: true,
     },
-    consentAccepted: true,
-  };
-
-  await firestore()
-    .collection(registrationsCollection)
-    .doc(id)
-    .set({
-      ...registration,
-      submittedAtServer: FieldValue.serverTimestamp(),
-    });
+  });
 
   return NextResponse.json({
     id,
+    referenceId,
     message: "Registration saved successfully.",
   });
 }

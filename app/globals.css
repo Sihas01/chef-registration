@@ -1,15 +1,20 @@
 :root {
-  --background: #f7f8f5;
+  --background: #f4f6fb;
   --surface: #ffffff;
-  --text: #17201c;
-  --muted: #5f6d66;
-  --line: #d8ded9;
-  --field: #ffffff;
-  --accent: #0f6b5f;
-  --accent-dark: #0a4d45;
-  --focus: rgba(15, 107, 95, 0.22);
-  --success-bg: #e8f6ef;
-  --success-text: #15553e;
+  --surface-soft: rgba(255, 255, 255, 0.78);
+  --text: #1d1d1f;
+  --muted: #6e6e73;
+  --line: rgba(60, 60, 67, 0.18);
+  --field: rgba(255, 255, 255, 0.86);
+  --accent: #0a84ff;
+  --accent-dark: #0057c2;
+  --focus: rgba(10, 132, 255, 0.2);
+  --success-bg: #eaf8ef;
+  --success-text: #16733d;
+  --error-bg: #fff1f2;
+  --error-text: #b4232f;
+  --control-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --panel-shadow: 0 18px 50px rgba(0, 0, 0, 0.08);
 }
 
 * {
@@ -23,13 +28,19 @@ html {
 body {
   margin: 0;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.7), rgba(247, 248, 245, 0)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(244, 246, 251, 0)),
     var(--background);
   color: var(--text);
   font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "SF Pro Display",
+    "SF Pro Text",
+    "Helvetica Neue",
     Arial,
-    Helvetica,
     sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 button,
@@ -50,12 +61,14 @@ select {
 
 .hero-image {
   width: calc(100% + 40px);
-  height: 30vh;
-  min-height: 210px;
+  height: 34vh;
+  min-height: 250px;
   margin: 0 -20px 48px;
   background:
-    linear-gradient(90deg, rgba(23, 32, 28, 0.34), rgba(23, 32, 28, 0.03)),
-    url("/images/registration-hero.png") center / cover no-repeat;
+    linear-gradient(90deg, rgba(2, 9, 25, 0.7), rgba(2, 9, 25, 0.16)),
+    linear-gradient(180deg, rgba(10, 132, 255, 0.16), rgba(2, 9, 25, 0.18)),
+    url("/images/chef-academy-hero.png") center 45% / cover no-repeat;
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.22);
 }
 
 .page-header {
@@ -67,7 +80,7 @@ select {
 .eyebrow {
   margin: 0 0 10px;
   color: var(--accent);
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0;
   text-transform: uppercase;
@@ -85,6 +98,7 @@ h1 {
   font-size: clamp(2.1rem, 5vw, 4.1rem);
   line-height: 1.02;
   letter-spacing: 0;
+  font-weight: 760;
 }
 
 .page-header p:last-child {
@@ -93,24 +107,6 @@ h1 {
   color: var(--muted);
   font-size: 1.03rem;
   line-height: 1.65;
-}
-
-.success-message {
-  margin-bottom: 24px;
-  padding: 13px 0;
-  border-top: 1px solid rgba(21, 85, 62, 0.28);
-  border-bottom: 1px solid rgba(21, 85, 62, 0.28);
-  color: var(--success-text);
-  font-weight: 700;
-}
-
-.error-message {
-  margin-bottom: 24px;
-  padding: 13px 0;
-  border-top: 1px solid rgba(174, 48, 48, 0.3);
-  border-bottom: 1px solid rgba(174, 48, 48, 0.3);
-  color: #9b1c1c;
-  font-weight: 700;
 }
 
 .registration-form {
@@ -128,6 +124,7 @@ h1 {
   font-size: 1.18rem;
   line-height: 1.25;
   letter-spacing: 0;
+  font-weight: 720;
 }
 
 .field-grid {
@@ -144,9 +141,9 @@ label,
 
 label span,
 legend {
-  color: #26332e;
+  color: #2c2c2e;
   font-size: 0.96rem;
-  font-weight: 700;
+  font-weight: 650;
   line-height: 1.35;
 }
 
@@ -154,13 +151,15 @@ input,
 select {
   width: 100%;
   min-height: 48px;
-  border: 1px solid #bac5be;
-  border-radius: 6px;
+  border: 1px solid rgba(60, 60, 67, 0.2);
+  border-radius: 10px;
   background: var(--field);
   color: var(--text);
-  padding: 11px 13px;
+  padding: 12px 14px;
   outline: none;
+  box-shadow: var(--control-shadow);
   transition:
+    background 160ms ease,
     border-color 160ms ease,
     box-shadow 160ms ease;
 }
@@ -168,7 +167,10 @@ select {
 input:focus,
 select:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 4px var(--focus);
+  background: #ffffff;
+  box-shadow:
+    0 0 0 4px var(--focus),
+    var(--control-shadow);
 }
 
 select {
@@ -177,8 +179,8 @@ select {
     linear-gradient(45deg, transparent 50%, #4d5b55 50%),
     linear-gradient(135deg, #4d5b55 50%, transparent 50%);
   background-position:
-    calc(100% - 18px) 20px,
-    calc(100% - 12px) 20px;
+    calc(100% - 19px) 20px,
+    calc(100% - 13px) 20px;
   background-size:
     6px 6px,
     6px 6px;
@@ -192,8 +194,11 @@ input[type="file"] {
 
 .fee-notice {
   margin-bottom: 24px;
-  padding: 2px 0 2px 18px;
-  border-left: 4px solid var(--accent);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-soft);
+  padding: 16px 18px;
+  box-shadow: var(--control-shadow);
 }
 
 .fee-notice p {
@@ -238,6 +243,7 @@ input[type="file"] {
   min-height: 18px;
   margin-top: 2px;
   accent-color: var(--accent);
+  box-shadow: none;
 }
 
 .radio-group span,
@@ -272,11 +278,13 @@ button {
   min-width: 150px;
   min-height: 50px;
   border: 0;
-  border-radius: 6px;
+  border-radius: 999px;
   background: var(--accent);
   color: #ffffff;
   cursor: pointer;
-  font-weight: 800;
+  font-weight: 700;
+  letter-spacing: 0;
+  box-shadow: 0 8px 22px rgba(10, 132, 255, 0.18);
   transition:
     background 160ms ease,
     transform 160ms ease,
@@ -285,7 +293,7 @@ button {
 
 button:hover {
   background: var(--accent-dark);
-  box-shadow: 0 10px 24px rgba(15, 107, 95, 0.18);
+  box-shadow: 0 10px 26px rgba(10, 132, 255, 0.22);
   transform: translateY(-1px);
 }
 
@@ -298,6 +306,71 @@ button:disabled {
 button:focus-visible {
   outline: 0;
   box-shadow: 0 0 0 4px var(--focus);
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(29, 29, 31, 0.38);
+  backdrop-filter: blur(12px);
+}
+
+.status-modal {
+  width: min(440px, 100%);
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.92);
+  padding: 28px;
+  text-align: center;
+  box-shadow: var(--panel-shadow);
+  backdrop-filter: blur(18px);
+}
+
+.modal-status-mark {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  margin: 0 auto 18px;
+  border-radius: 50%;
+  font-size: 0.9rem;
+  font-weight: 900;
+}
+
+.status-modal.success .modal-status-mark {
+  background: var(--success-bg);
+  color: var(--success-text);
+}
+
+.status-modal.error .modal-status-mark {
+  background: var(--error-bg);
+  color: var(--error-text);
+}
+
+.status-modal h2 {
+  margin-bottom: 10px;
+  font-size: 1.35rem;
+  line-height: 1.25;
+}
+
+.status-modal p {
+  margin-bottom: 22px;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.status-modal.success p {
+  color: var(--success-text);
+  font-weight: 700;
+}
+
+.status-modal.error p {
+  color: var(--error-text);
+  font-weight: 700;
 }
 
 @media (max-width: 680px) {
@@ -343,6 +416,14 @@ button:focus-visible {
   }
 
   .form-actions button {
+    width: 100%;
+  }
+
+  .status-modal {
+    padding: 24px 20px;
+  }
+
+  .status-modal button {
     width: 100%;
   }
 }

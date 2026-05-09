@@ -1,0 +1,32 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model Registration {
+  id                 String   @id @default(uuid())
+  referenceId        String   @unique @map("reference_id")
+  firstName          String   @map("first_name")
+  surname            String
+  gender             String
+  mobileNumber       String   @map("mobile_number")
+  studentId          String   @map("student_id")
+  studentEmail       String   @map("student_email")
+  feeStatus          String   @map("fee_status")
+  helpLoanAmount     Decimal? @map("help_loan_amount") @db.Decimal(10, 2)
+  receiptStoragePath String?  @map("receipt_storage_path")
+  receiptFileName    String?  @map("receipt_file_name")
+  receiptContentType String?  @map("receipt_content_type")
+  consentAccepted    Boolean  @default(true) @map("consent_accepted")
+  submittedAt        DateTime @default(now()) @map("submitted_at")
+
+  @@unique([studentId])
+  @@map("registrations")
+}

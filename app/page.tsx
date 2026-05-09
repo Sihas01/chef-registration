@@ -32,6 +32,7 @@ export default function Home() {
       });
       const result = (await response.json()) as {
         id?: string;
+        referenceId?: string;
         message?: string;
       };
 
@@ -41,7 +42,7 @@ export default function Home() {
 
       setSubmitStatus({
         type: "success",
-        message: `Registration saved successfully. Reference ID: ${result.id}`,
+        message: `Registration saved successfully. Reference ID: ${result.referenceId}`,
       });
       form.reset();
       setFeeStatus("");
@@ -75,12 +76,6 @@ export default function Home() {
             information for the 2026 academic year.
           </p>
         </header>
-
-        {submitStatus ? (
-          <div className={`${submitStatus.type}-message`} role="status">
-            {submitStatus.message}
-          </div>
-        ) : null}
 
         <form className="registration-form" onSubmit={handleSubmit}>
           <section className="form-section" aria-labelledby="personal-heading">
@@ -248,6 +243,30 @@ export default function Home() {
           </div>
         </form>
       </div>
+
+      {submitStatus ? (
+        <div className="modal-backdrop" role="presentation">
+          <div
+            aria-labelledby="submit-modal-title"
+            aria-modal="true"
+            className={`status-modal ${submitStatus.type}`}
+            role="dialog"
+          >
+            <div className="modal-status-mark" aria-hidden="true">
+              {submitStatus.type === "success" ? "OK" : "!"}
+            </div>
+            <h2 id="submit-modal-title">
+              {submitStatus.type === "success"
+                ? "Registration Saved"
+                : "Registration Not Saved"}
+            </h2>
+            <p>{submitStatus.message}</p>
+            <button type="button" onClick={() => setSubmitStatus(null)}>
+              Close
+            </button>
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }
