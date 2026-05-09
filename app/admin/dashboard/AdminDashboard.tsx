@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 type Registration = {
@@ -123,7 +124,18 @@ export function AdminDashboard({ username }: { username: string }) {
           <p>Review submitted student data, fee status, and receipt documents.</p>
         </div>
         <div className="admin-user">
-          <span>{username}</span>
+          <div className="admin-account-menu">
+            <button
+              aria-haspopup="true"
+              className="admin-account-trigger"
+              type="button"
+            >
+              {username}
+            </button>
+            <div className="admin-account-dropdown">
+              <Link href="/admin/change-password">Change Password</Link>
+            </div>
+          </div>
           <button type="button" onClick={handleLogout}>
             Sign Out
           </button>

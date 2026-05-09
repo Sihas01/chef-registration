@@ -49,3 +49,11 @@ Password: Admin@2026!
 ```
 
 Change this password before using the app with real student data.
+
+To change the password from the app:
+
+1. Sign in at `/admin`.
+2. Open `/admin/change-password`.
+3. Enter the current password and the new password.
+
+Only signed-in admins can access the change password page or API.

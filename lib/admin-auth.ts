@@ -1,4 +1,10 @@
-import { createHmac, randomUUID, scryptSync, timingSafeEqual } from "crypto";
+import {
+  createHmac,
+  randomBytes,
+  randomUUID,
+  scryptSync,
+  timingSafeEqual,
+} from "crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -45,6 +51,13 @@ export function verifyPassword(password: string, storedHash: string) {
     actualHash.length === expectedBuffer.length &&
     timingSafeEqual(actualHash, expectedBuffer)
   );
+}
+
+export function hashPassword(password: string) {
+  const salt = randomBytes(16).toString("hex");
+  const hash = scryptSync(password, salt, 64).toString("hex");
+
+  return `${salt}:${hash}`;
 }
 
 export function createAdminSessionToken(adminId: string, username: string) {
